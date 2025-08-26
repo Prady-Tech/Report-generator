@@ -1,44 +1,10 @@
-import sqlite3
-import bcrypt
-
-DB_NAME = "users.db"
-
-def init_db():
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-    cursor.execute('''CREATE TABLE IF NOT EXISTS users (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        username TEXT UNIQUE NOT NULL,
-                        password TEXT NOT NULL,
-                        role TEXT NOT NULL
-                    )''')
-    conn.commit()
-    conn.close()
-
-def add_user(username, password, role="user"):
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-
-    hashed = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
-
-    try:
-        cursor.execute("INSERT INTO users (username, password, role) VALUES (?, ?, ?)", 
-                       (username, hashed, role))
-        conn.commit()
-    except sqlite3.IntegrityError:
-        print(f"User '{username}' already exists.")
-    conn.close()
+# db.py - Legacy authentication module (replaced by database.py)
+from database import verify_user as db_verify_user, init_db as db_init
 
 def verify_user(username, password):
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
+    """Legacy wrapper for user verification"""
+    return db_verify_user(username, password)
 
-    cursor.execute("SELECT password, role FROM users WHERE username = ?", (username,))
-    result = cursor.fetchone()
-    conn.close()
-
-    if result:
-        stored_password, role = result
-        if bcrypt.checkpw(password.encode("utf-8"), stored_password):
-            return True, role
-    return False, None
+def init_db():
+    """Legacy wrapper for database initialization"""
+    return db_init()

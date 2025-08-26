@@ -2,7 +2,7 @@ from PySide6.QtWidgets import (
     QDialog, QVBoxLayout, QLineEdit, QPushButton, QLabel, QMessageBox, QFrame
 )
 from PySide6.QtCore import Qt
-from db import verify_user, init_db
+from database import verify_user, init_db
 
 
 class LoginDialog(QDialog):
@@ -12,7 +12,7 @@ class LoginDialog(QDialog):
         self.setModal(True)  # modal blocks until closed
         self.setMinimumSize(400, 400)
 
-        self.role = None  # Will store user role
+        self._role = None  # will store user role
 
         # ---- Center Frame (Card style) ----
         outer_layout = QVBoxLayout(self)
@@ -89,15 +89,20 @@ class LoginDialog(QDialog):
         valid, role = verify_user(username, password)
         if valid:
             QMessageBox.information(self, "Login Successful", f"Welcome {username} ({role})")
-            self.role = role
-            self.accept()  # closes dialog and returns exec_()
+            self._role = role
+            self.accept()  # closes dialog with Accepted status
         else:
             QMessageBox.warning(self, "Login Failed", "Invalid username or password.")
 
+    def get_role(self):
+        """Expose role for main.py"""
+        return self._role
+
 
 def run_login():
-    """Show login dialog and return role."""
+    """Initialize DB, show login dialog, and return the chosen role (or None)."""
     init_db()
     dialog = LoginDialog()
-    dialog.exec()  # blocks until dialog closed
-    return dialog.role
+    if dialog.exec() == QDialog.Accepted:
+        return dialog.get_role()
+    return None

@@ -4,3 +4,4 @@ matplotlib
 bcrypt
 PySide6
 SQLAlchemy
+alembic
